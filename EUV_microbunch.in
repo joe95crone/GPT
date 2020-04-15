@@ -1,0 +1,34 @@
+# Simulate a 100 microbunch 100pC beam @ 13.5nm
+
+# Beam Parameters
+E0 = 7.72e6;		# 7.72 MeV beam
+# a0 = 0.567 ... using a0^2/2 in Egamma formula gives 7.72 beam 
+G = 1+|qe|*E0/(me*c^2); # Lorentz Factor
+Beta = sqrt(1-G^-2);	# Speed Factor
+rxy = 25e-6;		# Microbunch radius @ focus
+# actually makes ASML calculations wrong - less than 1kW
+zlen = 13.5e-9;		# slightly unkown bunch length
+# based on having beamlets spaced by 13.5nm for density modulation but still have smooth macropulse
+Qmicro = -1e-12;	# 1pC microbunch
+
+# Simulation Parameters
+nps = 10; 		# Number of macro-particles for microbunch
+
+# Microbunch Creation
+setparticles("microbunch",nps,me,qe,Qmicro); 
+setrxydist("microbunch","g",0,rxy,0,3);
+setphidist("microbunch","u",0,2*pi); 
+setzdist("microbunch","g",0,zlen,3,3);
+setGdist("microbunch","u",G,0);			# No energy spread
+
+# Conversion to 13.5nm spaced macrobunch
+Nmicro = 100;		# 100 microbunches
+dz = 13.5e-9;		# 13.5nm spacing between microbunches
+
+setcopy("microbunch",Nmicro,dz);
+
+# Space Charge
+if(Qmicro!=0) spacecharge3Dmesh();
+
+# Output
+tout(0,3.5e-9,1e-10);				# For 1.05m in 3cm steps
